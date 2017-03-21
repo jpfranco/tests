@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ABR Test</title>
+
+	<style>
+		body {
+			font-family: 'Helvetica Neue', sans-serif;
+		}
+		#container {
+			width: 800px;
+		}
+	</style>
+	<link rel="stylesheet" href="//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/html5-skin.min.css"/>
+
+	<script src="//player.ooyala.com/static/v4/stable/4.12.6/core.min.js"></script>
+	<script src="//player.ooyala.com/static/v4/stable/4.12.6/video-plugin/main_html5.min.js"></script>
+	<script src="//player.ooyala.com/static/v4/sandbox/pbw-6472/video-plugin/bit_wrapper.min.js"></script>
+	<!--script src="//localhost:8000/repos/video-plugins-internal/build/bit_wrapper.js"></script-->
+	<script src="//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/html5-skin.min.js"></script>
+
+	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+	<script src="//rawgit.com/WebReflection/url-search-params/master/build/url-search-params.js"></script>
+</head>
+<body>
+
+	<h2>ABR Test</h2>
+
+	<div id="container"></div>
+	<canvas id="bitrateChart" width="400" height="80"></canvas>
+	<canvas id="bandwidthChart" width="400" height="80"></canvas>
+
+	<script>
+
+		function ChartWrapper(domId, name, startTime, endTime, chartOptions) {
+			this.name = name;
+			this.startTime = startTime;
+			this.endTime = endTime;
+			this.previousValue = 0;
+			this.labels = [startTime, startTime, endTime];
+			this.data = [0, 0, 0];
+
+			var chartConfig = {
+				type: 'line',
+				data: {
+					labels: this.labels,
+					datasets: [{
+						label: name,
+						data: this.data,
+						cubicInterpolationMode: 'monotone'
+					}]
+				},
+				options: chartOptions || {}
+			};
+			this.chart = new Chart(document.getElementById(domId).getContext('2d'), chartConfig);
+		}
+
+		ChartWrapper.prototype.update = function(currentValue) {
+			var dateTimeNow = new Date();
+			var dataIndex = this.data.length - 2;
+
+			this.labels[dataIndex] = dateTimeNow;
+			this.data[dataIndex] = this.previousValue;
+			dataIndex++;
+
+			if (currentValue) {
+				this.labels[dataIndex] = dateTimeNow;
+				this.data[dataIndex] = currentValue;
+				this.previousValue = currentValue;
+				dataIndex++;
+			}
+
+			this.labels[dataIndex] = dateTimeNow;
+			this.data[dataIndex] = 0;
+			dataIndex++;
+			this.labels[dataIndex] = this.endTime;
+			this.data[dataIndex] = 0;
+
+			console.log('>>>>', this.name + ':', this.previousValue, 'kbps -', moment(dateTimeNow).format('h:mm:ss.SSSS A'));
+			this.chart.update();
+		};
+
+		ChartWrapper.prototype.getLastUpdateDate = function() {
+			return this.labels[this.labels.length - 2];
+		};
+
+		var chartOptions = {
+			animation: false,
+			scales: {
+				xAxes: [{
+					type: 'time',
+					time: {
+						displayFormats: {
+							millisecond: 'hh:mm:ss',
+							second: 'hh:mm:ss',
+							minute: 'hh:mm:ss',
+							hour: 'hh:mm:ss',
+							day: 'hh:mm:ss',
+							week: 'hh:mm:ss',
+							month: 'hh:mm:ss',
+							quarter: 'hh:mm:ss',
+							year: 'hh:mm:ss',
+						}
+					}
+				}],
+				yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+			}
+		};
+
+		var startTime = new Date();
+		var endTime = new Date(startTime);
+		endTime.setMinutes(startTime.getMinutes() + 30);
+
+		var bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
+		var bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
+
+		var urlParams = new URLSearchParams(window.location.search);
+		var embedCode = urlParams.get('ec') || 'FqM3EwODE692MhTI9X0bHx4mj7ZvrquU';
+		var playerParams = {
+			pcode: urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e',
+			playerBrandingId: urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d',
+			platform: urlParams.get('platform') || 'html5',
+			debug: true,
+			skin: {
+				config: '//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/skin.json'
+			},
+			embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : 'http://player.ooyala.com/sas/embed_token/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?account_id=95032&api_key=8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN&expires=1580569200&signature=pY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I&override_syndication_group=override_all_synd_groups',
+			onCreate: window.onCreate
+		};
+
+		OO.ready(function() {
+			window.pp = OO.Player.create('container', embedCode, playerParams);
+		});
+
+		function onCreate(player) {
+  		player.mb.subscribe('*', 'test', function(eventName, eventCode, data) {
+				switch (eventName) {
+					case OO.EVENTS.BITRATE_CHANGED:
+						bitrateChart.update(Math.round(eventCode.bitrate / 1000));
+						break;
+					case OO.EVENTS.PAUSE:
+						bitrateChart.update();
+						bandwidthChart.update();
+						break;
+					case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
+						// Update data point to show real time bitrate and bandwidth
+						var dateTimeNow = new Date();
+						var lastBRUpdate = dateTimeNow.getTime() - bitrateChart.getLastUpdateDate().getTime();
+						if (lastBRUpdate > 30000) {
+							console.log(">>>>lastBRUpdate", lastBRUpdate);
+							bitrateChart.update(null);
+						}
+						var lastBWupdate = dateTimeNow.getTime() - bandwidthChart.getLastUpdateDate().getTime();
+						if (lastBWupdate > 30000) {
+							console.log(">>>>lastBWupdate", lastBWupdate);
+							bandwidthChart.update();
+						}
+						break;
+				}
+	    });
+		}
+
+		window.onDownloadFinishedCallback = function(data) {
+			if (data.mimeType && data.mimeType.indexOf('video') >= 0 && data.size > 1000) {
+				var estimatedBandwidth = Math.round(((data.size * 8) / data.downloadTime) / 1000);
+				bandwidthChart.update(estimatedBandwidth);
+			}
+		};
+	</script>
+</body>
+</html>
