@@ -11,17 +11,13 @@
 			width: 800px;
 		}
 	</style>
-	<link rel="stylesheet" href="//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/html5-skin.min.css"/>
-
-	<script src="//player.ooyala.com/static/v4/stable/4.12.6/core.min.js"></script>
-	<script src="//player.ooyala.com/static/v4/stable/4.12.6/video-plugin/main_html5.min.js"></script>
-	<script src="//player.ooyala.com/static/v4/sandbox/pbw-6472/video-plugin/bit_wrapper.min.js"></script>
-	<!--script src="//localhost:8000/repos/video-plugins-internal/build/bit_wrapper.js"></script-->
-	<script src="//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/html5-skin.min.js"></script>
+	<!-- TODO: Load this stylesheet dynamically -->
+	<link rel="stylesheet" href="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.css"/>
 
 	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
 	<script src="//rawgit.com/WebReflection/url-search-params/master/build/url-search-params.js"></script>
+	<script src="//rawgit.com/ded/script.js/master/dist/script.min.js"></script>
 </head>
 <body>
 
@@ -32,6 +28,9 @@
 	<canvas id="bandwidthChart" width="400" height="80"></canvas>
 
 	<script>
+		var bitrateChart = null;
+		var bandwidthChart = null;
+		var urlParams = new URLSearchParams(window.location.search);
 
 		function ChartWrapper(domId, name, startTime, endTime, chartOptions) {
 			this.name = name;
@@ -85,61 +84,84 @@
 			return this.labels[this.labels.length - 2];
 		};
 
-		var chartOptions = {
-			animation: false,
-			scales: {
-				xAxes: [{
-					type: 'time',
-					time: {
-						displayFormats: {
-							millisecond: 'hh:mm:ss',
-							second: 'hh:mm:ss',
-							minute: 'hh:mm:ss',
-							hour: 'hh:mm:ss',
-							day: 'hh:mm:ss',
-							week: 'hh:mm:ss',
-							month: 'hh:mm:ss',
-							quarter: 'hh:mm:ss',
-							year: 'hh:mm:ss',
+		function loadScripts(branch, version, callback) {
+			$script.order([
+				'//player.ooyala.com/static/v4/' + branch + '/' + version + '/core.min.js',
+        '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/bit_wrapper.min.js',
+        '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/main_html5.min.js',
+				'//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/html5-skin.min.js'
+      ], callback);
+		}
+
+		function initCharts() {
+			var chartOptions = {
+				animation: false,
+				scales: {
+					xAxes: [{
+						type: 'time',
+						time: {
+							displayFormats: {
+								millisecond: 'hh:mm:ss',
+								second: 'hh:mm:ss',
+								minute: 'hh:mm:ss',
+								hour: 'hh:mm:ss',
+								day: 'hh:mm:ss',
+								week: 'hh:mm:ss',
+								month: 'hh:mm:ss',
+								quarter: 'hh:mm:ss',
+								year: 'hh:mm:ss',
+							}
 						}
-					}
-				}],
-				yAxes: [{
-          ticks: {
-            beginAtZero: true
-          }
-        }]
-			}
-		};
+					}],
+					yAxes: [{
+	          ticks: {
+	            beginAtZero: true
+	          }
+	        }]
+				}
+			};
 
-		var startTime = new Date();
-		var endTime = new Date(startTime);
-		endTime.setMinutes(startTime.getMinutes() + 30);
+			var startTime = new Date();
+			var endTime = new Date(startTime);
+			endTime.setMinutes(startTime.getMinutes() + 30);
 
-		var bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
-		var bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
+			bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
+			bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
+		}
 
-		var urlParams = new URLSearchParams(window.location.search);
-		var embedCode = urlParams.get('ec') || 'FqM3EwODE692MhTI9X0bHx4mj7ZvrquU';
-		var playerParams = {
-			pcode: urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e',
-			playerBrandingId: urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d',
-			platform: urlParams.get('platform') || 'html5',
-			debug: true,
-			skin: {
-				config: '//player.ooyala.com/static/v4/stable/4.12.6/skin-plugin/skin.json'
-			},
-			embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : 'http://player.ooyala.com/sas/embed_token/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?account_id=95032&api_key=8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN&expires=1580569200&signature=pY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I&override_syndication_group=override_all_synd_groups',
-			onCreate: window.onCreate
-		};
+		function initPlayer() {
+			var embedCode = urlParams.get('ec') || 'FqM3EwODE692MhTI9X0bHx4mj7ZvrquU';
+			var branch = urlParams.get('branch') || 'production';
+			var version = urlParams.get('version') || 'latest';
 
-		OO.ready(function() {
-			window.pp = OO.Player.create('container', embedCode, playerParams);
-		});
+			var playerParams = {
+				pcode: urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e',
+				playerBrandingId: urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d',
+				platform: urlParams.get('platform') || 'html5',
+				debug: true,
+				skin: {
+					config: '//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/skin.json'
+				},
+				embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : 'http://player.ooyala.com/sas/embed_token/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?account_id=95032&api_key=8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN&expires=1580569200&signature=pY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I&override_syndication_group=override_all_synd_groups',
+				onCreate: window.onCreate
+			};
+
+			OO.ready(function() {
+				window.pp = OO.Player.create('container', embedCode, playerParams);
+			});
+		}
 
 		function onCreate(player) {
+			var bmPlayer = null;
+
   		player.mb.subscribe('*', 'test', function(eventName, eventCode, data) {
 				switch (eventName) {
+					case OO.EVENTS.PLAYBACK_READY:
+						if (!bmPlayer) {
+							bmPlayer = window.bitmovin.player('*')[0];
+							bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
+						}
+						break;
 					case OO.EVENTS.BITRATE_CHANGED:
 						bitrateChart.update(Math.round(eventCode.bitrate / 1000));
 						break;
@@ -165,12 +187,17 @@
 	    });
 		}
 
-		window.onDownloadFinishedCallback = function(data) {
+		function onDownloadFinished(data) {
 			if (data.mimeType && data.mimeType.indexOf('video') >= 0 && data.size > 1000) {
 				var estimatedBandwidth = Math.round(((data.size * 8) / data.downloadTime) / 1000);
 				bandwidthChart.update(estimatedBandwidth);
 			}
 		};
+
+		loadScripts(urlParams.get('branch') || 'production', urlParams.get('version') || 'latest', function() {
+			initCharts();
+			initPlayer();
+		});
 	</script>
 </body>
 </html>
