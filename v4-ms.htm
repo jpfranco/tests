@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ooyala Video Test</title>
+    <link rel="stylesheet" href="//player.ooyala.com/static/v4/candidate/latest/skin-plugin/html5-skin.min.css"/>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/core.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/video-plugin/bit_wrapper.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/video-plugin/main_html5.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/skin-plugin/html5-skin.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/ad-plugin/ad_manager_vast.min.js"></script>
+  </head>
+  <body>
+
+
+    <div style="width:520px" id="container">    </div>
+    <br>
+    <script>
+      var playerParam = {
+        "pcode": "tsbmYyOjRH6dK3rmGxeTP2uleUj_",
+        "playerBrandingId": "39412bb0d62d41239ed5e4cd048d70a6",
+        "onCreate": onCreate,
+        "skin": {},
+        "vast": {
+          "all_ads": [
+            {
+              "position": "900000",
+              "position_type": "t",
+              "tag_url": "https://s3.amazonaws.com/demo.jwplayer.com/static-tag/preroll.xml"
+            }
+          ]
+        }
+      };
+
+      function onCreate(player) {
+
+      }
+
+      OO.ready(function() {
+
+        console.log(">>>>", OO.isAndroid);
+        if (OO.isAndroid) {
+          OO.requiresSingleVideoElement = OO.isAndroid && (!OO.isAndroid4Plus || OO.chromeMajorVersion < 40);
+        }
+
+        window.pp = OO.Player.create("container", "53NmtlYTE6_E_k-b0fqmi443QxwsPOBS", playerParam);
+      });
+ </script>
+  </body>
+</html>
