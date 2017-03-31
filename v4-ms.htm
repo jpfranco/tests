@@ -38,7 +38,7 @@
 
         console.log(">>>>", OO.isAndroid);
         if (OO.isAndroid) {
-          OO.requiresSingleVideoElement = OO.isAndroid && (!OO.isAndroid4Plus || OO.chromeMajorVersion < 40);
+          OO.requiresSingleVideoElement = false;// OO.isAndroid && (!OO.isAndroid4Plus || OO.chromeMajorVersion < 40);
         }
 
         window.pp = OO.Player.create("container", "53NmtlYTE6_E_k-b0fqmi443QxwsPOBS", playerParam);
