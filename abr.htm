@@ -168,32 +168,32 @@
       player.mb.subscribe('*', 'test', function(eventName, eventCode, data) {
         switch (eventName) {
           case OO.EVENTS.PLAYBACK_READY:
-          if (!bmPlayer) {
-            bmPlayer = window.bitmovin.player('*')[0];
-            bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
-          }
-          break;
+            if (!bmPlayer) {
+              bmPlayer = window.bitmovin.player('*')[0];
+              bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
+            }
+            break;
           case OO.EVENTS.BITRATE_CHANGED:
-          _bitrateChart.update(Math.round(eventCode.bitrate / 1000));
-          break;
+            _bitrateChart.update(Math.round(eventCode.bitrate / 1000));
+            break;
           case OO.EVENTS.PAUSE:
-          _bitrateChart.update();
-          _bandwidthChart.update();
-          break;
-          case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
-          // Update data point to show real time bitrate and bandwidth
-          var dateTimeNow = new Date();
-          var lastBRUpdate = dateTimeNow.getTime() - _bitrateChart.getLastUpdateDate().getTime();
-          if (lastBRUpdate > 30000) {
-            console.log(">>>>lastBRUpdate", lastBRUpdate);
-            _bitrateChart.update(null);
-          }
-          var lastBWupdate = dateTimeNow.getTime() - _bandwidthChart.getLastUpdateDate().getTime();
-          if (lastBWupdate > 30000) {
-            console.log(">>>>lastBWupdate", lastBWupdate);
+            _bitrateChart.update();
             _bandwidthChart.update();
-          }
-          break;
+            break;
+          case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
+            // Update data point to show real time bitrate and bandwidth
+            var dateTimeNow = new Date();
+            var lastBRUpdate = dateTimeNow.getTime() - _bitrateChart.getLastUpdateDate().getTime();
+            if (lastBRUpdate > 30000) {
+              console.log(">>>>lastBRUpdate", lastBRUpdate);
+              _bitrateChart.update(null);
+            }
+            var lastBWupdate = dateTimeNow.getTime() - _bandwidthChart.getLastUpdateDate().getTime();
+            if (lastBWupdate > 30000) {
+              console.log(">>>>lastBWupdate", lastBWupdate);
+              _bandwidthChart.update();
+            }
+            break;
         }
       });
     }
@@ -210,6 +210,5 @@
       initPlayer();
     });
   </script>
-  
 </body>
 </html>
