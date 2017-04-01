@@ -28,9 +28,9 @@
 	<canvas id="bandwidthChart" width="400" height="80"></canvas>
 
 	<script>
-		var bitrateChart = null;
-		var bandwidthChart = null;
-		var urlParams = new URLSearchParams(window.location.search);
+		var _bitrateChart = null;
+		var _bandwidthChart = null;
+		var _params = getPageParameters();
 
 		function ChartWrapper(domId, name, startTime, endTime, chartOptions) {
 			this.name = name;
@@ -84,6 +84,21 @@
 			return this.labels[this.labels.length - 2];
 		};
 
+    function getPageParameters() {
+      var params = {};
+      var urlParams = new URLSearchParams(window.location.search);
+      var defaultEmbedToken = 'http://player.ooyala.com/sas/embed_token/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?account_id=95032&api_key=8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN&expires=1580569200&signature=pY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I&override_syndication_group=override_all_synd_groups';
+
+      params.branch = urlParams.get('branch') || 'candidate';
+      params.version = urlParams.get('version') || 'latest';
+      params.platform = urlParams.get('platform') || 'html5';
+      params.embedCode = urlParams.get('ec') || 'FqM3EwODE692MhTI9X0bHx4mj7ZvrquU';
+      params.pcode = urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e';
+      params.playerBrandingId = urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d';
+      params.embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : defaultEmbedToken;
+      return params;
+    }
+    
 		function loadScripts(branch, version, callback) {
 			$script.order([
 				'//player.ooyala.com/static/v4/' + branch + '/' + version + '/core.min.js',
@@ -125,29 +140,25 @@
 			var endTime = new Date(startTime);
 			endTime.setMinutes(startTime.getMinutes() + 30);
 
-			bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
-			bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
+			_bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
+			_bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
 		}
 
 		function initPlayer() {
-			var embedCode = urlParams.get('ec') || 'FqM3EwODE692MhTI9X0bHx4mj7ZvrquU';
-			var branch = urlParams.get('branch') || 'production';
-			var version = urlParams.get('version') || 'latest';
-
 			var playerParams = {
-				pcode: urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e',
-				playerBrandingId: urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d',
-				platform: urlParams.get('platform') || 'html5',
-				debug: true,
+				pcode: _params.pcode,
+				playerBrandingId: _params.playerBrandingId,
+				platform: _params.platform,
+        embedToken: _params.embedToken,
+        onCreate: window.onCreate,
+        debug: true,
 				skin: {
-					config: '//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/skin.json'
-				},
-				embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : 'http://player.ooyala.com/sas/embed_token/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?account_id=95032&api_key=8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN&expires=1580569200&signature=pY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I&override_syndication_group=override_all_synd_groups',
-				onCreate: window.onCreate
+					config: '//player.ooyala.com/static/v4/' + _params.branch + '/' + _params.version + '/skin-plugin/skin.json'
+				}
 			};
 
 			OO.ready(function() {
-				window.pp = OO.Player.create('container', embedCode, playerParams);
+				window.pp = OO.Player.create('container', _params.embedCode, playerParams);
 			});
 		}
 
@@ -163,24 +174,24 @@
 						}
 						break;
 					case OO.EVENTS.BITRATE_CHANGED:
-						bitrateChart.update(Math.round(eventCode.bitrate / 1000));
+						_bitrateChart.update(Math.round(eventCode.bitrate / 1000));
 						break;
 					case OO.EVENTS.PAUSE:
-						bitrateChart.update();
-						bandwidthChart.update();
+						_bitrateChart.update();
+						_bandwidthChart.update();
 						break;
 					case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
 						// Update data point to show real time bitrate and bandwidth
 						var dateTimeNow = new Date();
-						var lastBRUpdate = dateTimeNow.getTime() - bitrateChart.getLastUpdateDate().getTime();
+						var lastBRUpdate = dateTimeNow.getTime() - _bitrateChart.getLastUpdateDate().getTime();
 						if (lastBRUpdate > 30000) {
 							console.log(">>>>lastBRUpdate", lastBRUpdate);
-							bitrateChart.update(null);
+							_bitrateChart.update(null);
 						}
-						var lastBWupdate = dateTimeNow.getTime() - bandwidthChart.getLastUpdateDate().getTime();
+						var lastBWupdate = dateTimeNow.getTime() - _bandwidthChart.getLastUpdateDate().getTime();
 						if (lastBWupdate > 30000) {
 							console.log(">>>>lastBWupdate", lastBWupdate);
-							bandwidthChart.update();
+							_bandwidthChart.update();
 						}
 						break;
 				}
@@ -190,11 +201,11 @@
 		function onDownloadFinished(data) {
 			if (data.mimeType && data.mimeType.indexOf('video') >= 0 && data.size > 1000) {
 				var estimatedBandwidth = Math.round(((data.size * 8) / data.downloadTime) / 1000);
-				bandwidthChart.update(estimatedBandwidth);
+				_bandwidthChart.update(estimatedBandwidth);
 			}
 		};
 
-		loadScripts(urlParams.get('branch') || 'production', urlParams.get('version') || 'latest', function() {
+		loadScripts(_params.branch, _params.version, function() {
 			initCharts();
 			initPlayer();
 		});
