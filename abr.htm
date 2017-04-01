@@ -1,88 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>ABR Test</title>
+  <title>ABR Test</title>
 
-	<style>
-		body {
-			font-family: 'Helvetica Neue', sans-serif;
-		}
-		#container {
-			width: 800px;
-		}
-	</style>
-	<!-- TODO: Load this stylesheet dynamically -->
-	<link rel="stylesheet" href="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.css"/>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    #container {
+      width: 800px;
+    }
+  </style>
+  <!-- TODO: Load this stylesheet dynamically -->
+  <link rel="stylesheet" href="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.css"/>
 
-	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
-	<script src="//rawgit.com/WebReflection/url-search-params/master/build/url-search-params.js"></script>
-	<script src="//rawgit.com/ded/script.js/master/dist/script.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+  <script src="//rawgit.com/WebReflection/url-search-params/master/build/url-search-params.js"></script>
+  <script src="//rawgit.com/ded/script.js/master/dist/script.min.js"></script>
 </head>
 <body>
 
-	<h2>ABR Test</h2>
+  <h2>ABR Test</h2>
 
-	<div id="container"></div>
-	<canvas id="bitrateChart" width="400" height="80"></canvas>
-	<canvas id="bandwidthChart" width="400" height="80"></canvas>
+  <div id="container"></div>
+  <canvas id="bitrateChart" width="400" height="80"></canvas>
+  <canvas id="bandwidthChart" width="400" height="80"></canvas>
 
-	<script>
-		var _bitrateChart = null;
-		var _bandwidthChart = null;
-		var _params = getPageParameters();
+  <script>
+    var _bitrateChart = null;
+    var _bandwidthChart = null;
+    var _params = getPageParameters();
 
-		function ChartWrapper(domId, name, startTime, endTime, chartOptions) {
-			this.name = name;
-			this.startTime = startTime;
-			this.endTime = endTime;
-			this.previousValue = 0;
-			this.labels = [startTime, startTime, endTime];
-			this.data = [0, 0, 0];
+    function ChartWrapper(domId, name, startTime, endTime, chartOptions) {
+      this.name = name;
+      this.startTime = startTime;
+      this.endTime = endTime;
+      this.previousValue = 0;
+      this.labels = [startTime, startTime, endTime];
+      this.data = [0, 0, 0];
 
-			var chartConfig = {
-				type: 'line',
-				data: {
-					labels: this.labels,
-					datasets: [{
-						label: name,
-						data: this.data,
-						cubicInterpolationMode: 'monotone'
-					}]
-				},
-				options: chartOptions || {}
-			};
-			this.chart = new Chart(document.getElementById(domId).getContext('2d'), chartConfig);
-		}
+      var chartConfig = {
+        type: 'line',
+        data: {
+          labels: this.labels,
+          datasets: [{
+            label: name,
+            data: this.data,
+            cubicInterpolationMode: 'monotone'
+          }]
+        },
+        options: chartOptions || {}
+      };
+      this.chart = new Chart(document.getElementById(domId).getContext('2d'), chartConfig);
+    }
 
-		ChartWrapper.prototype.update = function(currentValue) {
-			var dateTimeNow = new Date();
-			var dataIndex = this.data.length - 2;
+    ChartWrapper.prototype.update = function(currentValue) {
+      var dateTimeNow = new Date();
+      var dataIndex = this.data.length - 2;
 
-			this.labels[dataIndex] = dateTimeNow;
-			this.data[dataIndex] = this.previousValue;
-			dataIndex++;
+      this.labels[dataIndex] = dateTimeNow;
+      this.data[dataIndex] = this.previousValue;
+      dataIndex++;
 
-			if (currentValue) {
-				this.labels[dataIndex] = dateTimeNow;
-				this.data[dataIndex] = currentValue;
-				this.previousValue = currentValue;
-				dataIndex++;
-			}
+      if (currentValue) {
+        this.labels[dataIndex] = dateTimeNow;
+        this.data[dataIndex] = currentValue;
+        this.previousValue = currentValue;
+        dataIndex++;
+      }
 
-			this.labels[dataIndex] = dateTimeNow;
-			this.data[dataIndex] = 0;
-			dataIndex++;
-			this.labels[dataIndex] = this.endTime;
-			this.data[dataIndex] = 0;
+      this.labels[dataIndex] = dateTimeNow;
+      this.data[dataIndex] = 0;
+      dataIndex++;
+      this.labels[dataIndex] = this.endTime;
+      this.data[dataIndex] = 0;
 
-			console.log('>>>>', this.name + ':', this.previousValue, 'kbps -', moment(dateTimeNow).format('h:mm:ss.SSSS A'));
-			this.chart.update();
-		};
+      console.log('>>>>', this.name + ':', this.previousValue, 'kbps -', moment(dateTimeNow).format('h:mm:ss.SSSS A'));
+      this.chart.update();
+    };
 
-		ChartWrapper.prototype.getLastUpdateDate = function() {
-			return this.labels[this.labels.length - 2];
-		};
+    ChartWrapper.prototype.getLastUpdateDate = function() {
+      return this.labels[this.labels.length - 2];
+    };
 
     function getPageParameters() {
       var params = {};
@@ -98,117 +98,118 @@
       params.embedToken: urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : defaultEmbedToken;
       return params;
     }
-    
-		function loadScripts(branch, version, callback) {
-			$script.order([
-				'//player.ooyala.com/static/v4/' + branch + '/' + version + '/core.min.js',
+
+    function loadScripts(branch, version, callback) {
+      $script.order([
+        '//player.ooyala.com/static/v4/' + branch + '/' + version + '/core.min.js',
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/bit_wrapper.min.js',
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/main_html5.min.js',
-				'//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/html5-skin.min.js'
+        '//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/html5-skin.min.js'
       ], callback);
-		}
+    }
 
-		function initCharts() {
-			var chartOptions = {
-				animation: false,
-				scales: {
-					xAxes: [{
-						type: 'time',
-						time: {
-							displayFormats: {
-								millisecond: 'hh:mm:ss',
-								second: 'hh:mm:ss',
-								minute: 'hh:mm:ss',
-								hour: 'hh:mm:ss',
-								day: 'hh:mm:ss',
-								week: 'hh:mm:ss',
-								month: 'hh:mm:ss',
-								quarter: 'hh:mm:ss',
-								year: 'hh:mm:ss',
-							}
-						}
-					}],
-					yAxes: [{
-	          ticks: {
-	            beginAtZero: true
-	          }
-	        }]
-				}
-			};
+    function initCharts() {
+      var chartOptions = {
+        animation: false,
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+              displayFormats: {
+                millisecond: 'hh:mm:ss',
+                second: 'hh:mm:ss',
+                minute: 'hh:mm:ss',
+                hour: 'hh:mm:ss',
+                day: 'hh:mm:ss',
+                week: 'hh:mm:ss',
+                month: 'hh:mm:ss',
+                quarter: 'hh:mm:ss',
+                year: 'hh:mm:ss',
+              }
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      };
 
-			var startTime = new Date();
-			var endTime = new Date(startTime);
-			endTime.setMinutes(startTime.getMinutes() + 30);
+      var startTime = new Date();
+      var endTime = new Date(startTime);
+      endTime.setMinutes(startTime.getMinutes() + 30);
 
-			_bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
-			_bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
-		}
+      _bitrateChart = new ChartWrapper('bitrateChart', 'Bitrate', startTime, endTime, chartOptions);
+      _bandwidthChart = new ChartWrapper('bandwidthChart', 'Bandwidth Estimate', startTime, endTime, chartOptions);
+    }
 
-		function initPlayer() {
-			var playerParams = {
-				pcode: _params.pcode,
-				playerBrandingId: _params.playerBrandingId,
-				platform: _params.platform,
+    function initPlayer() {
+      var playerParams = {
+        pcode: _params.pcode,
+        playerBrandingId: _params.playerBrandingId,
+        platform: _params.platform,
         embedToken: _params.embedToken,
         onCreate: window.onCreate,
         debug: true,
-				skin: {
-					config: '//player.ooyala.com/static/v4/' + _params.branch + '/' + _params.version + '/skin-plugin/skin.json'
-				}
-			};
+        skin: {
+          config: '//player.ooyala.com/static/v4/' + _params.branch + '/' + _params.version + '/skin-plugin/skin.json'
+        }
+      };
 
-			OO.ready(function() {
-				window.pp = OO.Player.create('container', _params.embedCode, playerParams);
-			});
-		}
+      OO.ready(function() {
+        window.pp = OO.Player.create('container', _params.embedCode, playerParams);
+      });
+    }
 
-		function onCreate(player) {
-			var bmPlayer = null;
+    function onCreate(player) {
+      var bmPlayer = null;
 
-  		player.mb.subscribe('*', 'test', function(eventName, eventCode, data) {
-				switch (eventName) {
-					case OO.EVENTS.PLAYBACK_READY:
-						if (!bmPlayer) {
-							bmPlayer = window.bitmovin.player('*')[0];
-							bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
-						}
-						break;
-					case OO.EVENTS.BITRATE_CHANGED:
-						_bitrateChart.update(Math.round(eventCode.bitrate / 1000));
-						break;
-					case OO.EVENTS.PAUSE:
-						_bitrateChart.update();
-						_bandwidthChart.update();
-						break;
-					case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
-						// Update data point to show real time bitrate and bandwidth
-						var dateTimeNow = new Date();
-						var lastBRUpdate = dateTimeNow.getTime() - _bitrateChart.getLastUpdateDate().getTime();
-						if (lastBRUpdate > 30000) {
-							console.log(">>>>lastBRUpdate", lastBRUpdate);
-							_bitrateChart.update(null);
-						}
-						var lastBWupdate = dateTimeNow.getTime() - _bandwidthChart.getLastUpdateDate().getTime();
-						if (lastBWupdate > 30000) {
-							console.log(">>>>lastBWupdate", lastBWupdate);
-							_bandwidthChart.update();
-						}
-						break;
-				}
-	    });
-		}
+      player.mb.subscribe('*', 'test', function(eventName, eventCode, data) {
+        switch (eventName) {
+          case OO.EVENTS.PLAYBACK_READY:
+          if (!bmPlayer) {
+            bmPlayer = window.bitmovin.player('*')[0];
+            bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
+          }
+          break;
+          case OO.EVENTS.BITRATE_CHANGED:
+          _bitrateChart.update(Math.round(eventCode.bitrate / 1000));
+          break;
+          case OO.EVENTS.PAUSE:
+          _bitrateChart.update();
+          _bandwidthChart.update();
+          break;
+          case OO.EVENTS.PLAYHEAD_TIME_CHANGED:
+          // Update data point to show real time bitrate and bandwidth
+          var dateTimeNow = new Date();
+          var lastBRUpdate = dateTimeNow.getTime() - _bitrateChart.getLastUpdateDate().getTime();
+          if (lastBRUpdate > 30000) {
+            console.log(">>>>lastBRUpdate", lastBRUpdate);
+            _bitrateChart.update(null);
+          }
+          var lastBWupdate = dateTimeNow.getTime() - _bandwidthChart.getLastUpdateDate().getTime();
+          if (lastBWupdate > 30000) {
+            console.log(">>>>lastBWupdate", lastBWupdate);
+            _bandwidthChart.update();
+          }
+          break;
+        }
+      });
+    }
 
-		function onDownloadFinished(data) {
-			if (data.mimeType && data.mimeType.indexOf('video') >= 0 && data.size > 1000) {
-				var estimatedBandwidth = Math.round(((data.size * 8) / data.downloadTime) / 1000);
-				_bandwidthChart.update(estimatedBandwidth);
-			}
-		};
+    function onDownloadFinished(data) {
+      if (data.mimeType && data.mimeType.indexOf('video') >= 0 && data.size > 1000) {
+        var estimatedBandwidth = Math.round(((data.size * 8) / data.downloadTime) / 1000);
+        _bandwidthChart.update(estimatedBandwidth);
+      }
+    };
 
-		loadScripts(_params.branch, _params.version, function() {
-			initCharts();
-			initPlayer();
-		});
-	</script>
+    loadScripts(_params.branch, _params.version, function() {
+      initCharts();
+      initPlayer();
+    });
+  </script>
+  
 </body>
 </html>
