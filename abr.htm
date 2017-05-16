@@ -96,6 +96,9 @@
       params.pcode = urlParams.get('pcode') || '8yMGYyOvhG5HuuITgXl_UUwes_5e';
       params.playerBrandingId = urlParams.get('pbid') || '12190f6ca4ba4371a4b67eb1bfc9c91d';
       params.embedToken = urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : defaultEmbedToken;
+      params.preventAdaptationOnSeek = urlParams.get('preventAdaptationOnSeek');
+      params.startupBitrate = urlParams.get('startupBitrate');
+
       return params;
     }
 
@@ -157,6 +160,23 @@
         }
       };
 
+      if (_params.preventAdaptationOnSeek || _params.startupBitrate) {
+        playerParams['bit-wrapper'] = {};
+
+        if (_params.preventAdaptationOnSeek) {
+          playerParams['bit-wrapper'].tweaks = {
+            prevent_adaptation_on_seek: _params.preventAdaptationOnSeek === 'true' ? true : false
+          };
+        }
+        if (_params.startupBitrate) {
+          playerParams['bit-wrapper'].adaptation = {
+            desktop: {
+              startupBitrate: parseInt(_params.startupBitrate, 10)
+            }
+          };
+        }
+      }
+
       OO.ready(function() {
         window.pp = OO.Player.create('container', _params.embedCode, playerParams);
       });
@@ -169,7 +189,8 @@
         switch (eventName) {
           case OO.EVENTS.PLAYBACK_READY:
             if (!bmPlayer) {
-              bmPlayer = window.bitmovin.player('*')[0];
+              var allBmPlayers = window.bitmovin.player('*');
+              bmPlayer = allBmPlayers[1] || allBmPlayers[0]; // Workaround for 6.1.21 bug
               bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
             }
             break;
