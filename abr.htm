@@ -98,7 +98,7 @@
       params.embedToken = urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : defaultEmbedToken;
       params.preventAdaptationOnSeek = urlParams.get('preventAdaptationOnSeek');
       params.startupBitrate = urlParams.get('startupBitrate');
-      params.bmParamsUrl = decodeURIComponent(urlParams.get('bmParamsUrl'));
+      params.bmParamsUrl = urlParams.get('bmParamsUrl') ? decodeURIComponent(urlParams.get('bmParamsUrl')) : '';
 
       return params;
     }
