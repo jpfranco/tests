@@ -98,17 +98,23 @@
       params.embedToken = urlParams.get('embedToken') ? decodeURIComponent(urlParams.get('embedToken')) : defaultEmbedToken;
       params.preventAdaptationOnSeek = urlParams.get('preventAdaptationOnSeek');
       params.startupBitrate = urlParams.get('startupBitrate');
+      params.bmParamsUrl = decodeURIComponent(urlParams.get('bmParamsUrl'));
 
       return params;
     }
 
-    function loadScripts(branch, version, callback) {
-      $script.order([
+    function loadScripts(branch, version, bmParamsUrl, callback) {
+      var scripts = [
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/core.min.js',
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/bit_wrapper.min.js',
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/video-plugin/main_html5.min.js',
         '//player.ooyala.com/static/v4/' + branch + '/' + version + '/skin-plugin/html5-skin.min.js'
-      ], callback);
+      ];
+      if (bmParamsUrl) {
+        scripts.unshift(bmParamsUrl);
+      }
+
+      $script.order(scripts, callback);
     }
 
     function initCharts() {
@@ -160,20 +166,23 @@
         }
       };
 
-      if (_params.preventAdaptationOnSeek || _params.startupBitrate) {
-        playerParams['bit-wrapper'] = {};
+      if (window.bmParams || _params.preventAdaptationOnSeek || _params.startupBitrate) {
+        playerParams['bit-wrapper'] = _.extend({}, window.bmParams);
 
         if (_params.preventAdaptationOnSeek) {
-          playerParams['bit-wrapper'].tweaks = {
-            prevent_adaptation_on_seek: _params.preventAdaptationOnSeek === 'true' ? true : false
-          };
+          if (!playerParams['bit-wrapper'].tweaks) {
+            playerParams['bit-wrapper'].tweaks = {};
+          }
+          playerParams['bit-wrapper'].tweaks.prevent_adaptation_on_seek = _params.preventAdaptationOnSeek === 'true' ? true : false;
         }
         if (_params.startupBitrate) {
-          playerParams['bit-wrapper'].adaptation = {
-            desktop: {
-              startupBitrate: parseInt(_params.startupBitrate, 10)
-            }
-          };
+          if (!playerParams['bit-wrapper'].adaptation) {
+            playerParams['bit-wrapper'].adaptation = {};
+          }
+          if (!playerParams['bit-wrapper'].adaptation.desktop) {
+            playerParams['bit-wrapper'].adaptation.desktop = {};
+          }
+          playerParams['bit-wrapper'].adaptation.desktop.startupBitrate = parseInt(_params.startupBitrate, 10);
         }
       }
 
@@ -226,7 +235,7 @@
       }
     };
 
-    loadScripts(_params.branch, _params.version, function() {
+    loadScripts(_params.branch, _params.version, _params.bmParamsUrl, function() {
       initCharts();
       initPlayer();
     });

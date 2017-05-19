@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ooyala Adaptation Test Page</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="abrMonitoring.js"></script>
+
+    <!-- Bitmovin Player -->
+    <script type="text/javascript" src="bitmovinplayer.min.js"></script>
+
+    <style>
+        body {
+          font-family: Arial;
+        }
+        figure {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        .container h1 {
+            margin-bottom: 22px;
+            line-height: 66px;
+        }
+        .container h2 {
+            font-weight: normal;
+            margin-bottom: 36px;
+            line-height: 26px;
+        }
+        .player-wrapper {
+            width: 711px;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <input id="startup-bitrate" placeholder="startup bitrate [Mbps]" onkeydown="if (event.keyCode == 13) { setupPlayer(); }" /><span style="margin-left:0.2em;margin-right:0.5em;">Mbps</span>
+        <button class="load" onclick="setupPlayer();">LOAD</button>
+        <div class="player-wrapper">
+            <div id="player"></div>
+        </div>
+        <div id="abrMonitor" style="height:500px;width:100%;margin-bottom:30px;"></div>
+        <div id="abrMonitor2" style="height:300px;width:100%;"></div>
+        <div class="buffer">
+            <p>Stalls: <span id="stalls">0</span> - seconds: <span id="stalled">0</span></p>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+  var player;
+
+  var url = 'https://player.ooyala.com/sas/player_api/v2/authorization/embed_code/8yMGYyOvhG5HuuITgXl_UUwes_5e/FqM3EwODE692MhTI9X0bHx4mj7ZvrquU?embedToken=http%3A%2F%2Fplayer.ooyala.com%2Fsas%2Fembed_token%2F8yMGYyOvhG5HuuITgXl_UUwes_5e%2FFqM3EwODE692MhTI9X0bHx4mj7ZvrquU%3Faccount_id%3D95032%26api_key%3D8yMGYyOvhG5HuuITgXl_UUwes_5e.Bk0HN%26expires%3D1580569200%26signature%3DpY3ZitMpsnI9waunSDiiGcmU06ub522QcINCqVOWT2I%26override_syndication_group%3Doverride_all_synd_groups&device=html5&domain=jpfranco.github.io';
+
+  var startupBitrateInput = document.querySelector('#startup-bitrate');
+  if (localStorage.getItem('startup_bitrate')) {
+    startupBitrateInput.value = Math.ceil(100 * localStorage.getItem('startup_bitrate')) / 100;
+  }
+
+  function setupPlayer() {
+    if(parseFloat(startupBitrateInput.value)) {
+      localStorage.setItem('startup_bitrate', startupBitrateInput.value);
+    }
+    document.querySelector('button.load').disabled = true;
+    startupBitrateInput.disabled = true;
+
+    fetch(url)
+    .then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      var tmp = data.authorization_data;
+      for (var key in tmp) {
+        if (tmp.hasOwnProperty(key)) {
+          tmp = tmp[key];
+          break;
+        }
+      }
+
+      for (var i = 0; i < tmp.streams.length; i++) {
+        if (tmp.streams[i].delivery_type.indexOf('dash') > -1) {
+          tmp = tmp.streams[i];
+          break;
+        }
+      }
+
+      if (tmp.drm) {
+        for (var drmSystem in tmp.drm) {
+          if (tmp.drm.hasOwnProperty(drmSystem) && tmp.drm[drmSystem].la_url) {
+            tmp.drm[drmSystem].LA_URL = tmp.drm[drmSystem].la_url;
+            delete tmp.drm[drmSystem].la_url;
+          }
+        }
+      }
+      loadPlayer(atob(tmp.url.data), tmp.drm);
+    });
+  }
+
+  function setUpBufferMonitoring(player) {
+    var stalledTime = document.querySelector('#stalled');
+    var stalls = document.querySelector('#stalls');
+    var stallIntervalID;
+    var isStalled = false, stallCount = 0;
+
+    stallIntervalID = setInterval(function() {
+      if(isStalled !== player.isStalled()) {
+        if(player.isStalled()) {
+          stallCount++;
+        }
+
+        isStalled = player.isStalled();
+      }
+
+      stalledTime.innerHTML = player.getTotalStalledTime();
+      stalls.innerHTML = '' + stallCount;
+    }, 100);
+
+    player.addEventHandler(bitmovin.player.EVENT.ON_PLAYBACK_FINISHED, function() {
+      clearInterval(stallIntervalID);
+    });
+    player.addEventHandler(bitmovin.player.EVENT.ON_ERROR, function() {
+      clearInterval(stallIntervalID);
+    });
+
+    // autoplay
+    player.play();
+  }
+
+  var isSeeking = false;
+  var lastVideoRepresentation = null;
+  var availableVideoRepresentations, availableAudioRepresentations;
+  var videoDownloadCount = 0;
+  var bandwidthMeasurements = [];
+
+  function getLowerVideoRepresentation(id) {
+    var currentIndex = availableVideoRepresentations.map(function(rep) {
+      return rep.id;
+    }).indexOf(id);
+
+    return availableVideoRepresentations[Math.max(0, currentIndex - 1)];
+  }
+
+  function getVideoRepresentationById(id) {
+    return availableVideoRepresentations.find(function(rep) {
+      return id === rep.id;
+    });
+  }
+
+  function getNearestAudioRepresentation(bandwidth) {
+    for(var i = availableAudioRepresentations.length - 1; i >= 0; i--) {
+      if(availableAudioRepresentations[i].bitrate <= bandwidth) {
+        return availableAudioRepresentations[i];
+      }
+    }
+
+    return availableAudioRepresentations[0];
+  }
+
+  function calcAverageBandwidth() {
+    return Math.round(bandwidthMeasurements.reduce(function(acc, val) {
+          return acc + val;
+        }, 0) / bandwidthMeasurements.length) || 0;
+  }
+
+  function loadPlayer(dashSource, drm) {
+    var conf = {
+      key: '89f6ed6c-ab0e-46c2-ac47-5665e60c3c41',
+      source: {
+        dash: dashSource,
+        title: 'Ooyala Test Stream'
+        // description: url
+      },
+      style: {
+        height: '400px'
+      },
+      tweaks: {
+        log_level: 1,
+        max_buffer_level: 50,
+        RESTART_THRESHOLD: 5
+      },
+      events: {
+        onReady: function() {
+          availableVideoRepresentations = player.getAvailableVideoQualities();
+          availableAudioRepresentations = player.getAvailableAudioQualities();
+
+          if (startupBitrate) {
+            // v1 logic doesn't support the startupBitrate flag so we need to do it on our own
+            for (var i = 0; i < availableVideoRepresentations.length; i++) {
+              if (!lastVideoRepresentation || (availableVideoRepresentations[i].bitrate > lastVideoRepresentation.bitrate && availableVideoRepresentations[i].bitrate <= startupBitrate)) {
+                lastVideoRepresentation = availableVideoRepresentations[i];
+              }
+            }
+
+            isSeeking = true;
+            console.info('USE STARTUP BITRATE', startupBitrate);
+          }
+        },
+        onSeek: function() {
+          // save representation one below current (better
+          var currentRepresentation = player.getDownloadedVideoData();
+          lastVideoRepresentation = getLowerVideoRepresentation(currentRepresentation.id);
+          console.log('set lastRepresentation on seek: ' + lastVideoRepresentation.id);
+          isSeeking = true;
+        },
+        onStartBuffering: function() {
+          console.log('onStartBuffering', {
+            video: player.getVideoBufferLength(),
+            audio: player.getAudioBufferLength()
+          });
+          if(!isSeeking && lastVideoRepresentation) {
+            console.log('reset set lastRepresentation on stall');
+            lastVideoRepresentation = null;
+          }
+        },
+        onStopBuffering: function() {
+          console.log('onStopBuffering');
+          isSeeking = false;
+        },
+        onDownloadFinished: function(evt) {
+          if (evt.downloadType === 'media' && evt.mimeType.indexOf('video') > -1 && evt.size > 2000) {
+            videoDownloadCount++;
+
+            var measurement = (evt.size * 8) / evt.downloadTime;
+            console.info('BANDWIDTH', measurement, JSON.stringify(bandwidthMeasurements));
+            bandwidthMeasurements.push(measurement);
+            if(bandwidthMeasurements.length > 5) {
+              bandwidthMeasurements.shift();
+            }
+
+            // set current average bandwidth as new startup bitrate
+            localStorage.setItem('startup_bitrate', calcAverageBandwidth() / 1000 / 1000);
+          }
+        }
+      },
+      adaptation: {
+        desktop: {
+          logic: 'v1',
+          onVideoAdaptation: function(evt) {
+            var suggestedRepresentation = getVideoRepresentationById(evt.suggested);
+
+            if(isSeeking && lastVideoRepresentation) {
+              console.log('keep representation during seeking: ' + lastVideoRepresentation.id);
+              // return last representation during seeking
+              return lastVideoRepresentation.id;
+            }
+
+            if(lastVideoRepresentation && lastVideoRepresentation.bitrate > suggestedRepresentation.bitrate) {
+              console.log('onVideoAdaptation (override), ' + JSON.stringify({
+                  id: lastVideoRepresentation.id,
+                  bitrate: (lastVideoRepresentation.bitrate / 1000000).toFixed(2),
+                  videoBuffer: player.getVideoBufferLength(),
+                  audioBuffer: player.getAudioBufferLength()
+                }));
+              return lastVideoRepresentation.id;
+            } else if(lastVideoRepresentation) {
+              console.log('reset adaptation logic override');
+              // reset adaptation logic override
+              lastVideoRepresentation = null;
+            }
+
+            console.log('onVideoAdaptation (suggested), ' + JSON.stringify({
+                id: evt.suggested,
+                bitrate: (suggestedRepresentation.bitrate / 1000000).toFixed(2),
+                videoBuffer: player.getVideoBufferLength(),
+                audioBuffer: player.getAudioBufferLength()
+              }));
+            // return suggested representation ID
+            return evt.suggested;
+          },
+          onAudioAdaptation: function(evt) {
+            // choose audio representation on 10% of average bandwidth
+            var averageBandwidth = calcAverageBandwidth();
+            var selectedAudioRepresentation = getNearestAudioRepresentation(averageBandwidth * 0.1);
+
+            console.log('onAudioAdaptation ' + JSON.stringify({
+                bandwidth: averageBandwidth,
+                suggested: evt.suggested,
+                selected: selectedAudioRepresentation.id,
+                bitrate: selectedAudioRepresentation.bitrate
+            }));
+
+            return selectedAudioRepresentation.id;
+          }
+        }
+      }
+    };
+
+    var startupBitrate = parseFloat(startupBitrateInput.value) * 1000 * 1000;
+
+    if (drm) {
+      conf.source.drm = drm;
+    }
+
+    player = bitmovin.player('player');
+
+    setUpAbrMonitoring(player, 'abrMonitor', 'abrMonitor2', 9);
+
+    player.setup(conf).then(setUpBufferMonitoring);
+  }
+</script>
+</body>
+</html>
