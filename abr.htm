@@ -198,9 +198,10 @@
         switch (eventName) {
           case OO.EVENTS.PLAYBACK_READY:
             if (!bmPlayer) {
-              var allBmPlayers = window.bitmovin.player('*');
+              var bitmovinPlayer = window.bitmovin.player || window.bitmovinPlayer;
+              var allBmPlayers = bitmovinPlayer('*');
               bmPlayer = allBmPlayers[1] || allBmPlayers[0]; // Workaround for 6.1.21 bug
-              bmPlayer.addEventHandler(bitmovin.player.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
+              bmPlayer.addEventHandler(bitmovinPlayer.EVENT.ON_DOWNLOAD_FINISHED, window.onDownloadFinished);
             }
             break;
           case OO.EVENTS.BITRATE_CHANGED:
