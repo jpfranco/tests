@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ooyala Video Test</title>
+  <link rel="stylesheet" href="//player.ooyala.com/static/v4/production/skin-plugin/html5-skin.min.css"/>
+  <script src="//player.ooyala.com/static/v4/production/core.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/video-plugin/main_html5.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/video-plugin/bit_wrapper.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/skin-plugin/html5-skin.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/other-plugin/playlists.min.js"></script>
+</head>
+<body>
+  <div style="width: 640px" id="container"></div>
+  <script>
+    function onCreate(player) {
+      var initialPlayBlocked = true;
+
+      var interceptInitialPlay = function() {
+        if (initialPlayBlocked) {
+          initialPlayBlocked = false;
+          return false;
+        // There is no way to unsubscribe an intercept handler, if initial play is no 
+        // longer blocked we just pass the arguments through
+        } else {
+          // First argument is the event name, return only the actual parameters
+          return [].slice.call(arguments, 1);
+        }
+      };
+
+      player.mb.intercept(OO.EVENTS.INITIAL_PLAY, 'test', interceptInitialPlay);
+    }
+
+    var playerParams = {
+      pcode: '9ocWkyOis6XHszQOCRXkzmxI5sLz',
+      playerBrandingId: 'b4b75f3104ae4de696d3dec137786090',
+      autoPlay: true,
+      playlistsPlugin:{
+        data:['23cc7ae2eeb1460f98a5178af404f5ac']
+      },
+      onCreate: onCreate
+    };
+
+    OO.ready(function() {
+      window.pp = OO.Player.create('container', 'tnMm9lYjE6oNqp5U5fUrLKr05V8iGEQL', playerParams);
+    });
+  </script>
+</body>
+</html>
