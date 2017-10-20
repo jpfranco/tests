@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ooyala Video Test</title>
+  <link rel="stylesheet" href="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.css"/>
+  <script src="//player.ooyala.com/static/v4/production/latest/core.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/latest/video-plugin/bit_wrapper.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/sandbox/PBW-6882/video-plugin/main_html5.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/latest/ad-plugin/google_ima.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.js"></script>
+</head>
+<body>
+  <div style="width:480px" id="container"></div>
+  <script>
+    var playerParams = {
+      pcode: '9odGgyOhmvtSyMbOojUa85Ug4if_',
+      playerBrandingId: 'e4c115a4f4e74866817e1c7fa60dfc39',
+      debug: true,
+      skin: {
+        config: '//player.ooyala.com/static/v4/candidate/latest/skin-plugin/skin.json'
+      }
+    };
+
+    OO.ready(function() {
+      window.pp = OO.Player.create('container', 'BlOWJxODE6e2gQ2Fsar4Iy83WpYaDqF-', playerParams);
+    });
+  </script>
+</body>
+</html>
