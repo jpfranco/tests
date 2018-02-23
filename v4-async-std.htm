@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ooyala Video Test</title>
+    <link rel="stylesheet" href="//player.ooyala.com/static/v4/candidate/latest/skin-plugin/html5-skin.min.css"/>
+    <script src="//player.ooyala.com/core/e4c115a4f4e74866817e1c7fa60dfc39" async></script>
+  </head>
+  <body>
+    <div style="width:640px" id="container"></div>
+    <script>
+      var playerParam = {
+        pcode: '1tZ2YyOrJS54quNwfWyNWCYUoNex',
+        playerBrandingId: 'a931ae1f41d849acbbeee7cea03afcf6',
+        onCreate: onPlayerCreate,
+        skin: {
+          config: '//player.ooyala.com/static/v4/candidate/latest/skin-plugin/skin.json'
+        },
+        debug: true,
+        'google-ima-ads-manager': {
+          'all_ads': [{
+            position: 0,
+            position_type: 't',
+            tag_url: 'http://player.ooyala.com/static/v4/testAssets/vast3/BasicPreroll.xml'
+          }]
+        }
+      };
+
+      function onPlayerCreate(player) {
+        player.mb.subscribe(OO.EVENTS.PLAYBACK_READY, 'test', function(event, params) {
+          console.log('PLAYBACK_READY');
+        });
+      }
+
+      function initializePlayer() {
+        OO.ready(function() {
+          window.player = OO.Player.create('container', 'Jram9wODE64Dtxb32ADc4lzTOoqN7y1v', playerParam);
+        });
+      }
+
+      function checkOONamespace(callback) {
+        if (window.OO) {
+          callback();
+        } else {
+          setTimeout(function() {
+            checkOONamespace(callback);
+          }, 250);
+        }
+      }
+
+      checkOONamespace(initializePlayer);
+ </script>
+  </body>
+</html>
