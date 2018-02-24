@@ -10,7 +10,6 @@
     var playerParam = {
       pcode: '9odGgyOhmvtSyMbOojUa85Ug4if_',
       playerBrandingId: 'e4c115a4f4e74866817e1c7fa60dfc39',
-      onCreate: onPlayerCreate,
       skin: {
         config: '//player.ooyala.com/static/v4/candidate/latest/skin-plugin/skin.json'
       },
@@ -24,18 +23,12 @@
       }
     };
 
-    function onPlayerCreate(player) {
-      player.mb.subscribe(OO.EVENTS.PLAYBACK_READY, 'test', function(event, params) {
-        console.log('PLAYBACK_READY');
-      });
-    }
-
-    function initializePlayer() {
+    window.ooInitializePlayer = function() {
       OO.ready(function() {
         window.player = OO.Player.create('container', '5kbmU5MzE6ivgWkobhscmQwGuD7fyNIa', playerParam);
       });
-    }
+    };
   </script>
-  <script src="//player.ooyala.com/core/e4c115a4f4e74866817e1c7fa60dfc39?plugins=bm,main,ima,pl" async onload="initializePlayer()"></script>
+  <script src="//player.ooyala.com/core/e4c115a4f4e74866817e1c7fa60dfc39?plugins=bm,main,ima,pl" async onload="ooInitializePlayer()"></script>
 </body>
 </html>
