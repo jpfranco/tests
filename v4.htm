@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ooyala Video Test</title>
+    <link rel="stylesheet" href="//player.ooyala.com/static/v4/candidate/latest/skin-plugin/html5-skin.min.css"/>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/core.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/video-plugin/bit_wrapper.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/video-plugin/main_html5.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/skin-plugin/html5-skin.min.js"></script>
+    <script src="//player.ooyala.com/static/v4/candidate/latest/ad-plugin/google_ima.min.js"></script>
+  </head>
+  <body>
+    <div style="width:520px" id="container"></div>
+    <script>
+      var playerParam = {
+        pcode: '1tZ2YyOrJS54quNwfWyNWCYUoNex',
+        playerBrandingId: 'a931ae1f41d849acbbeee7cea03afcf6',
+        onCreate: onPlayerCreate,
+        skin: {
+          config: '//player.ooyala.com/static/v4/candidate/latest/skin-plugin/skin.json'
+        },
+        debug: true,
+        'google-ima-ads-manager': {
+          'all_ads': [{
+            position: 0,
+            position_type: 't',
+            tag_url: 'http://player.ooyala.com/static/v4/testAssets/vast3/BasicPreroll.xml'
+          }]
+        },
+        'bit-wrapper': {
+          events: {
+            onReady: function(data) {
+              console.log(">>>>THIS ACTUALLY WORKS", data);
+            }
+          }
+        }
+      };
+
+      function onPlayerCreate(player) {
+        player.mb.subscribe(OO.EVENTS.PLAYBACK_READY, 'test', function(event, params) {
+          console.log(">>>>getDuration() - PLAYBACK_READY", player.getDuration());
+        });
+      }
+
+      OO.ready(function() {
+        window.player = OO.Player.create("container", "Jram9wODE64Dtxb32ADc4lzTOoqN7y1v", playerParam);
+      });
+ </script>
+  </body>
+</html>
