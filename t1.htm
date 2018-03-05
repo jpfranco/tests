@@ -105,7 +105,9 @@
                 }
 
                 function ready() {
-                    window.pp = OO.Player.create("EmbedOoyalaPlaylist-video-RrNHZqYTE6VHo8jf_-Rhi9xUduYAq704", "RrNHZqYTE6VHo8jf_-Rhi9xUduYAq704", playerParam);
+                    OO.ready(function() {
+                        window.pp = OO.Player.create("EmbedOoyalaPlaylist-video-RrNHZqYTE6VHo8jf_-Rhi9xUduYAq704", "RrNHZqYTE6VHo8jf_-Rhi9xUduYAq704", playerParam);
+                    });
                 };
            </script>
         </div>
