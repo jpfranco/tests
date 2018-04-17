@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ooyala Video Test</title>
+  <script src="//player.ooyala.com/core/2afcdbcdf59c41d1889114529501410b?plugins=main,bm,ima"></script>
+</head>
+<body>
+  <div style="width:360px" id="container"></div>
+  <script>
+    var playerParams = {
+      iosPlayMode: 'inline',
+      muteFirstPlay: true, // Required for autoplay inside AMP iframe
+      'google-ima-ads-manager': {
+        'all_ads': [{
+          position: 0,
+          position_type: 't',
+          tag_url: 'https://player.ooyala.com/static/v4/testAssets/vast3/BasicPreroll.xml'
+        }]
+      }
+    };
+
+    OO.ready(function() {
+      window.player = OO.Player.create('container', '5kbmU5MzE6ivgWkobhscmQwGuD7fyNIa', playerParams);
+    });
+
+    window.addEventListener('message', function(event) {
+      // PLEASE NOTE: event.origin should be checked here as well. It should be from a trusted source.
+      if (event.data.action === 'play') {
+        // If message is received before player creation then we autoplay by setting the
+        // autoplay config parameter, otherwise we call play() directly
+        if (window.player) {
+          window.player.play();
+        } else {
+          playerParams.autoplay = true;
+        }
+      }
+    }, false);
+  </script>
+</body>
+</html>
