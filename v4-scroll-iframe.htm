@@ -25,7 +25,7 @@
 
     window.addEventListener('message', function(event) {
       // PLEASE NOTE: event.origin should be checked here as well. It should be from a trusted source.
-      if (event.data.action === 'play') {
+      if (event && event.data && event.data.action === 'play') {
         // If message is received before player creation then we autoplay by setting the
         // autoplay config parameter, otherwise we call play() directly
         if (window.player) {
