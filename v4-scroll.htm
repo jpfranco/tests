@@ -87,7 +87,7 @@
       var iframe = document.querySelector('#container iframe');
       // Note that the iframe might not have finished loading by the time
       // it is scrolled into view.
-      if (iframe && iframe.contentWindow) {
+      if (iframe && iframe.contentWindow && iframe.contentWindow.postMessage) {
         iframe.contentWindow.postMessage({
           action: 'play'
         }, '*'); // This should be changed to the domain of the iframe instead of  '*'
