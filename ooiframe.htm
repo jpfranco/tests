@@ -78,6 +78,8 @@
     playerParams["skin"] = skin;
     delete playerParams.pbid;
     delete playerParams["skin.config"];
+    
+    playerParams.iosPlayMode = 'inline';
 
     // Parse docUrl
     if (!playerParams.docUrl) {
