@@ -7,6 +7,13 @@
   <script src="//player.ooyala.com/static/v4/production/latest/video-plugin/osmf_flash.min.js"></script>
   <script src="//player.ooyala.com/static/v4/production/latest/video-plugin/bit_wrapper.min.js"></script>
   <script src="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.js"></script>
+  <script src="//player.ooyala.com/static/v4/production/latest/other-plugin/discovery.min.js"></script>
+  
+  <script src="//player.ooyala.com/static/v4/production/latest/ad-plugin/google_ima.min.js"></script>
+  <!--script src="//player.ooyala.com/static/v4/production/latest/ad-plugin/ad_manager_vast.min.js"></script-->
+  <!--script src="//player.ooyala.com/static/v4/production/latest/ad-plugin/pulse.min.js"></script-->
+  <!--script src="//player.ooyala.com/static/v4/production/latest/ad-plugin/freewheel.min.js"></script-->
+  
   <link rel="stylesheet" href="//player.ooyala.com/static/v4/production/latest/skin-plugin/html5-skin.min.css"/>
 </head>
 
@@ -80,6 +87,37 @@
     delete playerParams["skin.config"];
     
     playerParams.iosPlayMode = 'inline';
+    
+    playerParams["vast"] = {
+       "all_ads": [
+         {
+           "position": "0",
+           "position_type": "t",
+           "tag_url": "http://player.ooyala.com/static/v4/testAssets/vast3/BasicPreroll.xml"
+         }
+       ]
+    };
+    playerParams["google-ima-ads-manager"] = {
+      "all_ads": [
+        {
+          "position": "0",
+          "position_type": "t",
+          "tag_url": "http://player.ooyala.com/static/v4/testAssets/vast3/BasicPreroll.xml"
+        }
+      ]
+    };
+    playerParams["videoplaza-ads-manager"] = {
+      "pulse_override_metadata": true,
+      "pulse_host": "https://pulse-demo.videoplaza.tv",
+      "pulse_tags": "standard-linears"
+    };
+    playerParams["freewheel-ads-manager"] = {
+      "fw_video_asset_id": "NqcGg4bzoOmMiV35ZttQDtBX1oNQBnT-",
+      "html5_ad_server": "http://g1.v.fwmrm.net",
+      "html5_player_profile": "90750:ooyala_html5",
+      "fw_mrm_network_id": "380912",
+      "showInAdControlBar": true
+    };
 
     // Parse docUrl
     if (!playerParams.docUrl) {
