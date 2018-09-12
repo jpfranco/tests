@@ -41,12 +41,6 @@
          "minWidth": 45
       },
       {
-        "name": "share",
-        "location": "controlBar",
-        "whenDoesNotFit": "moveToMoreOptions",
-        "minWidth": 45
-      },
-      {
         "name": "discovery",
         "location": "controlBar",
         "whenDoesNotFit": "moveToMoreOptions",
