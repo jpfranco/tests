@@ -1,0 +1,105 @@
+{
+  "skipControls": {
+    "enabled": true,
+  },
+  "buttons": {
+    "desktopContent": [
+      {
+        "name": "playPause",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      },
+      {
+        "name": "volume",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 240
+      },
+      {
+        "name": "live",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      },
+      {
+        "name": "timeDuration",
+        "location": "controlBar",
+        "whenDoesNotFit": "drop",
+        "minWidth": 145
+      },
+      {
+        "name": "flexibleSpace",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 1
+      },
+      {  
+         "name": "playbackSpeed",
+         "location": "controlBar",
+         "whenDoesNotFit": "moveToMoreOptions",
+         "minWidth": 45
+      },
+      {
+        "name": "share",
+        "location": "controlBar",
+        "whenDoesNotFit": "moveToMoreOptions",
+        "minWidth": 45
+      },
+      {
+        "name": "discovery",
+        "location": "controlBar",
+        "whenDoesNotFit": "moveToMoreOptions",
+        "minWidth": 45
+      },
+      {
+        "name": "closedCaption",
+        "location": "controlBar",
+        "whenDoesNotFit": "moveToMoreOptions",
+        "minWidth": 45
+      },
+      {
+        "name": "quality",
+        "location": "controlBar",
+        "whenDoesNotFit": "moveToMoreOptions",
+        "minWidth": 45
+      },
+      {
+        "name": "logo",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 125
+      },
+      {
+        "name": "stereoscopic",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      },
+      {
+        "name": "audioAndCC",
+        "location": "controlBar",
+        "whenDoesNotFit": "moveToMoreOptions",
+        "minWidth": 45
+      },
+      {
+        "name": "fullscreen",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      },
+      {
+        "name": "moreOptions",
+        "location": "controlBar",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      },
+      {
+        "name": "arrowsBlack",
+        "location": "mainView",
+        "whenDoesNotFit": "keep",
+        "minWidth": 45
+      }
+    ]
+  }
+}
